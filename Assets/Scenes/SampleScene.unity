@@ -412,10 +412,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b22eafa641315ad428753d5cb92ec3d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _switchCameraKey: 99
   _isometricCamera: {fileID: 963194227}
   _thirdPersonCamera: {fileID: 978307921}
-  _moveSpeed: 100
+  _moveSpeed: 50
   _scrollSpeed: 50
   _fieldOfViewBand: {x: 0, y: 120}
   _freezer: {fileID: 963194230}

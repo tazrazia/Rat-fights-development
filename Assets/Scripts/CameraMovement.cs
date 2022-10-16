@@ -2,9 +2,7 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    [Header("—мена камер")]
-    [SerializeField]
-    private KeyCode _switchCameraKey;
+    [Header("¬иды камер")]
     [SerializeField]
     private Camera _isometricCamera;
     [SerializeField]
@@ -17,33 +15,35 @@ public class CameraMovement : MonoBehaviour
     private float _scrollSpeed;
     [SerializeField]
     private Vector2 _fieldOfViewBand;
+
+    [Space]
     [SerializeField]
     private CursorFreezer _freezer;
 
     private float MoveKf => _isometricCamera.fieldOfView / _fieldOfViewBand.y * _moveSpeed * Time.deltaTime;
     private float ScrollKf => _scrollSpeed * Time.deltaTime;
-    private bool IsCursorOffScreen => Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width ||
-                                      Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height;
 
     private bool IsIsometricEnabled
     {
-        get => _isometricCamera.enabled;
-        set
+        get
         {
-            if (_thirdPersonCamera == null)
-                return;
+            if (_thirdPersonCamera != null)
+                if (Input.GetKeyUp(KeyCode.C))
+                {
+                    _thirdPersonCamera.enabled = _isometricCamera.enabled;
+                    _isometricCamera.enabled = !_isometricCamera.enabled;
+                }
 
-            _thirdPersonCamera.enabled = !value;
-            _isometricCamera.enabled = value;
+            return _isometricCamera.enabled;
         }
     }
 
+    private bool IsCursorFreezed => _freezer != null && (_freezer.enabled = Input.GetKey(KeyCode.Mouse2));
+    private bool IsCursorOffScreen => Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width ||
+                                      Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height;
+
     private void Update()
     {
-        // смена камеры
-        if (Input.GetKeyUp(_switchCameraKey))
-            IsIsometricEnabled = !IsIsometricEnabled;
-
         if (IsIsometricEnabled)
             IsometricUpdate();
     }
@@ -57,14 +57,9 @@ public class CameraMovement : MonoBehaviour
         if (IsCursorOffScreen)
             Move(Input.mousePosition.x - Screen.width / 2f, Input.mousePosition.y - Screen.height / 2f);
 
-        // перемещение через колесико
-        if (_freezer != null)
-        {
-            _freezer.enabled = Input.GetKey(KeyCode.Mouse2);
-
-            if (Input.GetKey(KeyCode.Mouse2))
-                Move(_freezer.DragPosition.x, _freezer.DragPosition.y);
-        }
+        // перемещение колесиком
+        if (IsCursorFreezed)
+            Move(_freezer.Drag.x, _freezer.Drag.y);
 
         // приближение
         if (Input.mouseScrollDelta.y != 0)
