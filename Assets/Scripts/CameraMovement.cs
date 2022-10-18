@@ -2,21 +2,20 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    [Header("Виды камер")]
     [SerializeField]
     private Camera _isometricCamera;
     [SerializeField]
     private Camera _thirdPersonCamera;
 
-    [Header("Настройка скоростей")]
-    [SerializeField][Tooltip("Скорость перемещения клавишами")]
+    [Header("Velocities setup")]
+    [SerializeField]
     private float _axisMovementVelocity;
-    [SerializeField][Tooltip("Скорость перемещения мышью")]
+    [SerializeField]
     private float _mouseMovementVelocity;
-    [SerializeField][Tooltip("Скорость приближения / отдаления")]
+    [SerializeField]
     private float _scrollingVelocity;
 
-    [Header("Диапазон приближения")]
+    [Header("Zooming")]
     [SerializeField]
     private Vector2 _fieldOfViewBand;
 
@@ -52,21 +51,21 @@ public class CameraMovement : MonoBehaviour
 
     private void IsometricUpdate()
     {
-        // перемещение стрелками
+        // arrows and wasd movement
         Move(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 
              _axisMovementVelocity);
 
-        // перемещение мышью
+        // mouse off screen movement
         if (IsCursorOffScreen)
             Move(Input.mousePosition.x - Screen.width / 2f, Input.mousePosition.y - Screen.height / 2f,
                  _mouseMovementVelocity);
         
-        // перемещение колесиком
+        // holding middle mouse button movement
         if (IsCursorFreezed)
             Move(_freezer.Drag.x, _freezer.Drag.y,
                  _mouseMovementVelocity);
 
-        // приближение
+        // zooming
         if (Input.mouseScrollDelta.y != 0)
             Zoom(Input.mouseScrollDelta.y,
                  _scrollingVelocity);
