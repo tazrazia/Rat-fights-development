@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028334, g: 0.2257134, b: 0.30692226, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -311,7 +311,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b22eafa641315ad428753d5cb92ec3d2, type: 3}
+  m_Script: {fileID: 11500000, guid: 333bcc0003003d549a13ac248a8672b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _isometricCamera: {fileID: 963194227}
@@ -347,7 +347,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 978307919}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: de23729a0a7bdb547b1294a16c2e3da7, type: 3}
+  m_Script: {fileID: 11500000, guid: 7b3242a69c3746340883c1459f172908, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _target: {fileID: 1617276997}
