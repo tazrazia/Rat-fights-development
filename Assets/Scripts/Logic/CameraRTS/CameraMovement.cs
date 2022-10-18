@@ -1,7 +1,6 @@
 using UnityEngine;
 
-/// w00f: always use namespaces, beware type names overriding: Logic.Camera(RTS) and UnityEngine.Camera
-namespace Assets.Scripts.Logic.CameraRTS
+namespace Logic.CameraRTS
 {
     public class CameraMovement : MonoBehaviour
     {
@@ -18,24 +17,28 @@ namespace Assets.Scripts.Logic.CameraRTS
         [SerializeField]
         private float _scrollingVelocity;
 
+        [Header("Mouse movement")]
+        [SerializeField]
+        private bool _isWheelMoveInversionEnabled;
+        [SerializeField]
+        private Vector2 _outOfWindowOffset;
+
         [Header("Zooming")]
         [SerializeField]
-        private Vector2 _fieldOfViewBand;
+        private Vector2 _fieldOfViewBounds;
 
         private CursorFreezer _freezer;
-        private float FovFactor => _isometricCamera.fieldOfView / _fieldOfViewBand.y;
+        private float FovFactor => _fieldOfViewBounds.y == 0 ? 1f : _isometricCamera.fieldOfView / _fieldOfViewBounds.y;
 
         private bool IsIsometricEnabled
         {
             get
             {
-                /// w00f: Always use the parentheses if other 'if' has them.
                 if (_thirdPersonCamera != null)
                 {
                     if (Input.GetKeyUp(KeyCode.C))
                     {
                         _thirdPersonCamera.enabled = _isometricCamera.enabled;
-                        /// w00f: boolean check changes the state of enabled ?
                         _isometricCamera.enabled = !_isometricCamera.enabled;
                     }
                 }
@@ -44,51 +47,42 @@ namespace Assets.Scripts.Logic.CameraRTS
             }
         }
 
-        /// w00f: Separate the switch and check logics.
         private bool IsCursorFreezed => _freezer != null && (_freezer.enabled = Input.GetKey(KeyCode.Mouse2));
 
-        /// w00f: Add offset bounds: x < 0 + xBound || x > width - xbound
-        private bool IsCursorOffScreen => Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width ||
-                                          Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height;
+        private bool IsCursorOffScreen => IsNumberOutOfBounds(Input.mousePosition.x, 0, Screen.width,  _outOfWindowOffset.x) ||
+                                          IsNumberOutOfBounds(Input.mousePosition.y, 0, Screen.height, _outOfWindowOffset.y);
 
         private void Start() => _freezer = gameObject.AddComponent<CursorFreezer>();
 
         private void LateUpdate()
         {
-            /// w00f: Separate the switch and check logics.
             if (IsIsometricEnabled)
                 IsometricUpdate();
         }
 
         private void IsometricUpdate()
         {
-            Move(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 
-                 _axisMovementVelocity);
+            Move(GetInputAxes(), _axisMovementVelocity);
 
-            /// w00f: Please, normalize all direction's vectors.
             if (IsCursorOffScreen)
-                Move(Input.mousePosition.x - Screen.width / 2f, Input.mousePosition.y - Screen.height / 2f,
-                     _mouseMovementVelocity);
-        
-
-            /// w00f: separate cursorFreezed and outOfWindows mouse logic
-            /// Add a mouseInvertion int = invert ? -1 : 1;
+                Move(GetMouseFromCenterDirection(), _mouseMovementVelocity);
+            else
             if (IsCursorFreezed)
-                Move(_freezer.Drag.x, _freezer.Drag.y,
-                     _mouseMovementVelocity);
-            /// else:
+                Move(_freezer.DragDirection, _mouseMovementVelocity * (_isWheelMoveInversionEnabled ? -1 : 1));
+
             if (Input.mouseScrollDelta.y != 0)
-                Zoom(Input.mouseScrollDelta.y,
-                     _scrollingVelocity);
+                Zoom(Input.mouseScrollDelta.y, _scrollingVelocity);
         }
 
-        /// w00f: first Vector3.Normalized() then Vector3.ClampMagnitude.
-        private void Move(float x, float y, float velocity) =>
-            _isometricCamera.transform.position += velocity * Time.deltaTime * FovFactor * Vector3.ClampMagnitude(new Vector3(x, 0, y), 1);
+        private void Move(Vector2 direction, float velocity) =>
+            _isometricCamera.transform.position += velocity * Time.deltaTime * FovFactor * new Vector3(direction.x, 0, direction.y);
 
-        /// w00f: parameter name isn't value, but 'zoomerDirection' for example.
-        private void Zoom(float value, float velocity) => 
-            _isometricCamera.fieldOfView = Mathf.Clamp(_isometricCamera.fieldOfView - velocity * Time.deltaTime * Mathf.Clamp(value, -1f, 1f), _fieldOfViewBand.x, _fieldOfViewBand.y);
+        private void Zoom(float direction, float velocity) => 
+            _isometricCamera.fieldOfView = Mathf.Clamp(_isometricCamera.fieldOfView - velocity * Time.deltaTime * Mathf.Clamp(direction, -1f, 1f), _fieldOfViewBounds.x, _fieldOfViewBounds.y);
+
+        private static bool IsNumberOutOfBounds(float number, float min, float max, float offset) => number < min + offset || number > max - offset;
+        private static Vector2 GetInputAxes() => new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
+        private static Vector2 GetMouseFromCenterDirection() => new Vector2(Input.mousePosition.x - Screen.width / 2f, Input.mousePosition.y - Screen.height / 2f).normalized;
     }
 
 }
