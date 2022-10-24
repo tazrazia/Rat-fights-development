@@ -50,7 +50,8 @@ namespace Logic.CameraRTS
 
         private void TryStartTransition(bool reversed = false)
         {
-            if (Utilities.MathExt.IsNumberOutOfBounds(_currentViewIndex + (reversed ? -1 : 1), 0, _views.Length - 1))
+            int next = _currentViewIndex + (reversed ? -1 : 1);
+            if (System.Math.Clamp(next, 0, _views.Length - 1) != next)
                 return;
 
             if (_transition != null) // interrupt current transition
@@ -65,7 +66,7 @@ namespace Logic.CameraRTS
             foreach (FollowView follower in _views)
                 follower.enabled = false;
 
-            _currentViewIndex += reversed ? -1 : 1;
+            _currentViewIndex = next;
             _transition = StartCoroutine(AnimatableMove(reversed));
         }
 

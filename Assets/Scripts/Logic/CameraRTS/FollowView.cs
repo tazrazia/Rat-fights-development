@@ -34,7 +34,7 @@ namespace Logic.CameraRTS
         {
             LateUpdate(); // set correct initial transform
 
-            if (Utilities.MathExt.IsNumberOutOfBounds(_camera.fieldOfView, FovBounds.x, FovBounds.y))
+            if (Mathf.Clamp(_camera.fieldOfView, FovBounds.x, FovBounds.y) != _camera.fieldOfView)
                 Zoom(0, 0); // set correct initial FOV
         }
 

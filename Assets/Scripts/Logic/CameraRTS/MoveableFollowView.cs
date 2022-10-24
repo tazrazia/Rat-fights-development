@@ -25,8 +25,8 @@ namespace Logic.CameraRTS
         private bool HasToFollow { get; set; }
         private float FovFactor => FovBounds.y == 0 ? 1f : _camera.fieldOfView / FovBounds.y;
         private bool IsCursorFreezed => _freezer != null && (_freezer.enabled = Input.GetKey(KeyCode.Mouse2));
-        private bool IsCursorOffScreen => Utilities.MathExt.IsNumberOutOfBounds(Input.mousePosition.x, 0, Screen.width, _outOfWindowOffset.x) ||
-                                          Utilities.MathExt.IsNumberOutOfBounds(Input.mousePosition.y, 0, Screen.height, _outOfWindowOffset.y);
+        private bool IsCursorOffScreen => Mathf.Clamp(Input.mousePosition.x, _outOfWindowOffset.x, Screen.width - _outOfWindowOffset.x) != Input.mousePosition.x ||
+                                          Mathf.Clamp(Input.mousePosition.y, _outOfWindowOffset.y, Screen.height - _outOfWindowOffset.y) != Input.mousePosition.y;
 
         protected override void Start()
         {
