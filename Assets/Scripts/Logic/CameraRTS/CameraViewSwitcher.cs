@@ -1,4 +1,5 @@
 using System.Collections;
+using Additional;
 using UnityEngine;
 
 namespace Logic.CameraRTS
@@ -51,7 +52,7 @@ namespace Logic.CameraRTS
         private void TryStartTransition(bool reversed = false)
         {
             int next = _currentViewIndex + (reversed ? -1 : 1);
-            if (System.Math.Clamp(next, 0, _views.Length - 1) != next)
+            if (next.IsOutOfBounds(0, _views.Length - 1) == true)
                 return;
 
             if (_transition != null) // interrupt current transition
@@ -74,7 +75,6 @@ namespace Logic.CameraRTS
         {
             FollowView pursuer = _views[_currentViewIndex];
 
-            // keep initials
             Vector3 initialPosition = transform.position;
             Quaternion initialRotation = transform.rotation;
             float initialFov = _camera.fieldOfView;
@@ -84,19 +84,18 @@ namespace Logic.CameraRTS
             // movement to a specific point in a given time
             float i = 1f / _transitionDuration * Time.fixedDeltaTime;
 
-            for (float kf = 0; kf <= 1f; kf += i)
+            for (float t = 0; t <= 1f; t += i)
             {
                 yield return new WaitForFixedUpdate();
                 pursuer.CalcExpectedTransform(out Vector3 targetPosition, out Quaternion targetRotation);
 
                 transform.SetPositionAndRotation(
-                    Vector3.Lerp(initialPosition, targetPosition, kf),
-                    Quaternion.Lerp(initialRotation, targetRotation, kf));
+                    Vector3.Lerp(initialPosition, targetPosition, t),
+                    Quaternion.Lerp(initialRotation, targetRotation, t));
 
-                _camera.fieldOfView = Mathf.Lerp(initialFov, targetFov, kf);
+                _camera.fieldOfView = Mathf.Lerp(initialFov, targetFov, t);
             }
 
-            // reached
             _transition = null;
             pursuer.enabled = true;
         }

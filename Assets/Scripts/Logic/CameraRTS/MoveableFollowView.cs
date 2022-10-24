@@ -1,3 +1,4 @@
+using Additional;
 using UnityEngine;
 
 namespace Logic.CameraRTS
@@ -25,34 +26,33 @@ namespace Logic.CameraRTS
         private bool HasToFollow { get; set; }
         private float FovFactor => FovBounds.y == 0 ? 1f : _camera.fieldOfView / FovBounds.y;
         private bool IsCursorFreezed => _freezer != null && (_freezer.enabled = Input.GetKey(KeyCode.Mouse2));
-        private bool IsCursorOffScreen => Mathf.Clamp(Input.mousePosition.x, _outOfWindowOffset.x, Screen.width - _outOfWindowOffset.x) != Input.mousePosition.x ||
-                                          Mathf.Clamp(Input.mousePosition.y, _outOfWindowOffset.y, Screen.height - _outOfWindowOffset.y) != Input.mousePosition.y;
+        private bool IsCursorOffScreen => Input.mousePosition.x.IsOutOfBounds(_outOfWindowOffset.x, Screen.width - _outOfWindowOffset.x) ||
+                                          Input.mousePosition.y.IsOutOfBounds(_outOfWindowOffset.y, Screen.height - _outOfWindowOffset.y);
 
-        protected override void Start()
+        private void Start()
         {
-            base.Start();
+            SetInitialViewState();
             _freezer = gameObject.AddComponent<CursorFreezer>();
         }
 
         private void OnDisable() => HasToFollow = false;
 
-        protected override void Update()
+        private void Update()
         {
-            base.Update();
-            
+            ZoomIfScrolled();
+
             if (Input.GetKeyDown(KeyCode.C))
                 HasToFollow = !HasToFollow;
         }
 
-        protected override void LateUpdate()
+        private void LateUpdate()
         {
             Move(GetInputAxes(), _axisMovementVelocity);
 
-            if (IsCursorOffScreen)
-                Move(GetMouseFromCenterDirection(), _mouseMovementVelocity);
-            else
             if (IsCursorFreezed)
                 Move(_freezer.DragDirection, _mouseMovementVelocity * (_isWheelMoveInversionEnabled ? -1 : 1));
+            else if (IsCursorOffScreen)
+                Move(GetMouseFromCenterDirection(), _mouseMovementVelocity);
 
             if (Input.GetKey(KeyCode.R))
                 Rotate(-1f, _rotationVelocity);
@@ -61,7 +61,7 @@ namespace Logic.CameraRTS
                 Rotate(1f, _rotationVelocity);
 
             if (HasToFollow)
-                base.LateUpdate();
+                UpdateFollowedView();
         }
 
         private void Move(Vector2 direction, float velocity)

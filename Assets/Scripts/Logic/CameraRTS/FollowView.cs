@@ -30,28 +30,11 @@ namespace Logic.CameraRTS
 
         protected virtual void Awake() => _camera = GetComponent<Camera>();
 
-        protected virtual void Start()
-        {
-            LateUpdate(); // set correct initial transform
+        private void Start() => SetInitialViewState();
 
-            if (Mathf.Clamp(_camera.fieldOfView, FovBounds.x, FovBounds.y) != _camera.fieldOfView)
-                Zoom(0, 0); // set correct initial FOV
-        }
+        private void Update() => ZoomIfScrolled();
 
-        protected virtual void Update()
-        {
-            if (Input.mouseScrollDelta.y != 0)
-                Zoom(Input.mouseScrollDelta.y, _scrollingVelocity);
-        }
-
-        protected virtual void LateUpdate()
-        {
-            if (_followed != null)
-            {
-                CalcExpectedTransform(out Vector3 position, out Quaternion rotation);
-                transform.SetPositionAndRotation(position, rotation);
-            }
-        }
+        private void LateUpdate() => UpdateFollowedView();
 
         public void CalcExpectedTransform(out Vector3 position, out Quaternion rotation)
         {
@@ -66,6 +49,29 @@ namespace Logic.CameraRTS
                 rotation = Quaternion.LookRotation(_followed.transform.forward) * Quaternion.Euler(_rotationAngleX, 0, 0);
 
             position = rotation * new Vector3(0, 0, -_distance) + followingPosition;
+        }
+
+        protected void SetInitialViewState()
+        {
+            UpdateFollowedView();
+
+            if (Mathf.Clamp(_camera.fieldOfView, FovBounds.x, FovBounds.y) != _camera.fieldOfView)
+                Zoom(0, 0); // set correct initial FOV
+        }
+
+        protected void ZoomIfScrolled()
+        {
+            if (Input.mouseScrollDelta.y != 0)
+                Zoom(Input.mouseScrollDelta.y, _scrollingVelocity);
+        }
+        
+        protected void UpdateFollowedView()
+        {
+            if (_followed == null)
+                return;
+
+            CalcExpectedTransform(out Vector3 position, out Quaternion rotation);
+            transform.SetPositionAndRotation(position, rotation);
         }
 
         private void Zoom(float direction, float velocity) =>
