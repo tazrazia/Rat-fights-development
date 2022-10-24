@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Logic.CameraRTS
 {
-    [RequireComponent(typeof(Camera))]
     public class MoveableFollowView : FollowView
     {
         [Space]
@@ -31,7 +30,7 @@ namespace Logic.CameraRTS
 
         private void Start()
         {
-            SetInitialViewState();
+            UpdateFollowing(); // set correct initial transform
             _freezer = gameObject.AddComponent<CursorFreezer>();
         }
 
@@ -39,7 +38,7 @@ namespace Logic.CameraRTS
 
         private void Update()
         {
-            ZoomIfScrolled();
+            UpdateScrolling();
 
             if (Input.GetKeyDown(KeyCode.C))
                 HasToFollow = !HasToFollow;
@@ -51,7 +50,8 @@ namespace Logic.CameraRTS
 
             if (IsCursorFreezed)
                 Move(_freezer.DragDirection, _mouseMovementVelocity * (_isWheelMoveInversionEnabled ? -1 : 1));
-            else if (IsCursorOffScreen)
+            else 
+            if (IsCursorOffScreen)
                 Move(GetMouseFromCenterDirection(), _mouseMovementVelocity);
 
             if (Input.GetKey(KeyCode.R))
@@ -61,7 +61,7 @@ namespace Logic.CameraRTS
                 Rotate(1f, _rotationVelocity);
 
             if (HasToFollow)
-                UpdateFollowedView();
+                UpdateFollowing();
         }
 
         private void Move(Vector2 direction, float velocity)
@@ -70,7 +70,8 @@ namespace Logic.CameraRTS
                 return;
 
             HasToFollow = false;
-            transform.position += velocity * Time.deltaTime * FovFactor * new Vector3(direction.x, 0, direction.y);
+            Vector3 correctDirection = transform.right * direction.x + transform.up * direction.y;
+            transform.position += velocity * Time.deltaTime * FovFactor * correctDirection;
         }
 
         private void Rotate(float direction, float velocity)
